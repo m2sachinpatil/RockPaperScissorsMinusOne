@@ -1,57 +1,186 @@
-Implementation Plan
-Backend (ASP.NET Core)
-Game Mechanics
+Features
+Game Mechanics:
 
-Create a GameService class to handle game logic (e.g., determining the winner, managing rounds).
+Two players choose hand shapes (Rock, Paper, Scissors) simultaneously.
 
-Implement a BestOfThreeMatch system to track wins across multiple rounds.
+Players remove one hand, and the remaining hands determine the winner.
 
-Use SignalR to manage real-time communication between players.
+Best-of-three match system.
 
-Multiplayer & Real-Time Gameplay
+Multiplayer & Real-Time Gameplay:
 
-Use SignalR hubs (GameHub) to facilitate real-time communication.
+Real-time updates using SignalR.
 
-Implement methods for:
+Players can start/join game sessions.
 
-Starting a game session.
+User Management & Authentication:
 
-Joining a game session.
+JWT-based authentication.
 
-Submitting hand choices.
+User registration and login.
 
-Removing a hand and resolving the round.
+Match history and scores stored in the database.
 
-User Management & Authentication
+Database Management:
 
-Implement JWT-based authentication using ASP.NET Core Identity.
+MSSQL database with Entity Framework Core.
 
-Create endpoints for:
+Database migrations for schema updates.
 
-User registration (/api/auth/register).
+Technologies Used
+Backend: ASP.NET Core, SignalR, Entity Framework Core
 
-User login (/api/auth/login).
+Database: MSSQL
 
-Fetching user match history (/api/user/history).
+Authentication: JWT (JSON Web Tokens)
 
-Database Management
+Testing: xUnit, Moq
 
-Design a database schema to store:
+API Documentation: Swagger
 
-Users (Id, Username, PasswordHash, etc.).
+Setup Instructions
+Prerequisites
+.NET SDK: Install the latest .NET SDK from here.
 
-Matches (MatchId, Player1Id, Player2Id, WinnerId, Timestamp).
+MSSQL Server: Install and configure MSSQL Server. Alternatively, use Docker to run an MSSQL container.
 
-MatchHistory (MatchId, PlayerId, HandChoice, Result).
+IDE: Use Visual Studio 2022 or Visual Studio Code with the C# extension.
 
-Use Entity Framework Core for database access and migrations.
+Steps
+Clone the repository:
 
-Non-Functional Requirements
+bash
+Copy
+git clone https://github.com/your-username/RockPaperScissorsMinusOne.git
+cd RockPaperScissorsMinusOne
+Update the database connection string in appsettings.json:
 
-Performance: Optimize database queries and use caching where necessary.
+json
+Copy
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=RockPaperScissors;Trusted_Connection=True;"
+  }
+}
+Run database migrations:
 
-Security: Use HTTPS, validate inputs, and sanitize data.
+bash
+Copy
+dotnet ef database update
+Restore NuGet packages:
 
-Availability: Implement retry mechanisms and handle exceptions gracefully.
+bash
+Copy
+dotnet restore
+Running the Application
+Start the application:
 
-Observability: Use logging (e.g., Serilog) and tracing for monitoring.
+bash
+Copy
+dotnet run
+Access the application at:
+
+Copy
+http://localhost:5000
+Use the Swagger UI to explore and test the API:
+
+Copy
+http://localhost:5000/swagger
+Testing
+Unit Tests
+Run unit tests:
+
+bash
+Copy
+dotnet test
+View test results in the terminal.
+
+Integration Tests
+Integration tests can be added to test API endpoints and database interactions.
+
+API Documentation
+The API is documented using Swagger. Access the Swagger UI at:
+
+Copy
+http://localhost:5000/swagger
+Endpoints
+POST /api/auth/register: Register a new user.
+
+POST /api/auth/login: Login and receive a JWT token.
+
+POST /api/game/play: Play a round of Rock Paper Scissors Minus One.
+
+SignalR Hub: /gamehub for real-time gameplay.
+
+Database Schema
+The database schema includes the following tables:
+
+Users: Stores user information.
+
+Matches: Stores match details.
+
+MatchHistory: Stores round results for each match.
+
+Schema Diagram
+sql
+Copy
+CREATE TABLE Users (
+    Id INT PRIMARY KEY IDENTITY,
+    Username NVARCHAR(50) NOT NULL UNIQUE,
+    PasswordHash NVARCHAR(255) NOT NULL
+);
+
+CREATE TABLE Matches (
+    MatchId INT PRIMARY KEY IDENTITY,
+    Player1Id INT FOREIGN KEY REFERENCES Users(Id),
+    Player2Id INT FOREIGN KEY REFERENCES Users(Id),
+    WinnerId INT FOREIGN KEY REFERENCES Users(Id),
+    Timestamp DATETIME NOT NULL
+);
+
+CREATE TABLE MatchHistory (
+    MatchHistoryId INT PRIMARY KEY IDENTITY,
+    MatchId INT FOREIGN KEY REFERENCES Matches(MatchId),
+    PlayerId INT FOREIGN KEY REFERENCES Users(Id),
+    HandChoice NVARCHAR(10) NOT NULL, -- Rock, Paper, Scissors
+    Result NVARCHAR(10) NOT NULL -- Win, Lose, Draw
+);
+Deployment
+Docker
+Build the Docker image:
+
+bash
+Copy
+docker build -t rockpaperscissorsminusone .
+Run the Docker container:
+
+bash
+Copy
+docker run -p 5000:80 rockpaperscissorsminusone
+Azure/AWS
+Push the Docker image to a container registry (e.g., Azure Container Registry, AWS ECR).
+
+Deploy the container using Kubernetes or a managed service (e.g., Azure Kubernetes Service, AWS ECS).
+
+Contributing
+Contributions are welcome! Follow these steps:
+
+Fork the repository.
+
+Create a new branch:
+
+bash
+Copy
+git checkout -b feature/your-feature-name
+Commit your changes:
+
+bash
+Copy
+git commit -m "Add your feature"
+Push to the branch:
+
+bash
+Copy
+git push origin feature/your-feature-name
+Open a pull request.
+
